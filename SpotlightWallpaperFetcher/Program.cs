@@ -9,6 +9,8 @@ namespace SpotlightWallpaperFetcher
     {
         static void Main(string[] args)
         {
+            WallpaperFetcher wf = new WallpaperFetcher();
+            wf.FetchWallpapers();
         }
     }
 }
