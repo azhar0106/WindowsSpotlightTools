@@ -1,9 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25123.0
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29926.136
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpotlightWallpaperFetcher", "SpotlightWallpaperFetcher\SpotlightWallpaperFetcher.csproj", "{3872AA4D-750E-4F4F-9763-839D36966C51}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WallpaperFetcher", "WallpaperFetcher\WallpaperFetcher.csproj", "{D0F09B68-AEEB-490A-BEAB-B047B17F2E40}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -11,12 +11,15 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{3872AA4D-750E-4F4F-9763-839D36966C51}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{3872AA4D-750E-4F4F-9763-839D36966C51}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{3872AA4D-750E-4F4F-9763-839D36966C51}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{3872AA4D-750E-4F4F-9763-839D36966C51}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D0F09B68-AEEB-490A-BEAB-B047B17F2E40}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D0F09B68-AEEB-490A-BEAB-B047B17F2E40}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D0F09B68-AEEB-490A-BEAB-B047B17F2E40}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D0F09B68-AEEB-490A-BEAB-B047B17F2E40}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {DB71ACB9-8CA0-429D-90B5-8A6DE2054CE6}
 	EndGlobalSection
 EndGlobal

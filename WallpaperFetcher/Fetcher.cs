@@ -7,9 +7,9 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 
-namespace SpotlightWallpaperFetcher
+namespace WallpaperFetcher
 {
-    public class WallpaperFetcher
+    public class Fetcher
     {
         const string DESKTOP_WALLPAPER_FOLDER = "Desktop";
         const string MOBILE_WALLPAPER_FOLDER = "Mobile";
@@ -39,7 +39,7 @@ namespace SpotlightWallpaperFetcher
         }
 
 
-        public WallpaperFetcher()
+        public Fetcher()
         {
             m_desktopWallpaperList = new List<string>();
             m_mobileWallpaperList = new List<string>();
@@ -55,10 +55,12 @@ namespace SpotlightWallpaperFetcher
             RegistryKey reg = Registry.CurrentUser;
             reg = reg.OpenSubKey(SPOTLIGHT_REGISTRY_KEY__LOCATION, false);
             string loc = null;
-            if (reg != null)
+            if (reg == null)
             {
-                loc = (string)reg.GetValue(SPOTLIGHT_REGISTRY_NAME__WALLPAPER_LOCATION);
+                Console.WriteLine("Registry data not found.");
+                return;
             }
+            loc = (string)reg.GetValue(SPOTLIGHT_REGISTRY_NAME__WALLPAPER_LOCATION);
 
             SpotlightWallpaperLocation = loc;
 
@@ -70,6 +72,12 @@ namespace SpotlightWallpaperFetcher
 
         private void CreateWallpaperList()
         {
+            if (string.IsNullOrWhiteSpace(SpotlightWallpaperLocation))
+            {
+                Console.WriteLine("Invalid Spotlight wallpaper location.");
+                return;
+            }
+
             string[] files = Directory.GetFiles(SpotlightWallpaperLocation);
             foreach (var file in files)
             {
