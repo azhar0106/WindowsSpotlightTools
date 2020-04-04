@@ -1,6 +1,7 @@
 ﻿using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -11,77 +12,123 @@ namespace WallpaperFetcher
 {
     public class Fetcher
     {
-        const string DESKTOP_WALLPAPER_FOLDER = "Desktop";
-        const string MOBILE_WALLPAPER_FOLDER = "Mobile";
-        const string SPOTLIGHT_REGISTRY_KEY__LOCATION = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Lock Screen\Creative";
-        const string SPOTLIGHT_REGISTRY_NAME__WALLPAPER_LOCATION = "HotspotImageFolderPath";
+        private const string DESKTOP_WALLPAPER_DIR = "Desktop";
+        private const string MOBILE_WALLPAPER_DIR = "Mobile";
+        private const string REGKEY_SPOTLIGHT = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Lock Screen\Creative";
+        private const string REGNAME_ASSET_DIR = "HotspotImageFolderPath";
+        private const string CDM_DIR = "Microsoft.Windows.ContentDeliveryManager_";
+        private const string ASSETS_DIR = @"LocalState\Assets";
 
-
-        private string m_spotlightWallpaperLocation;
-        public string SpotlightWallpaperLocation
-        {
-            get { return m_spotlightWallpaperLocation; }
-            set { m_spotlightWallpaperLocation = value; }
-        }
-
-        private List<string> m_desktopWallpaperList;
-        public List<string> DesktopWallpaperList
-        {
-            get { return m_desktopWallpaperList; }
-            set { m_desktopWallpaperList = value; }
-        }
-
-        private List<string> m_mobileWallpaperList;
-        public List<string> MobileWallpaperList
-        {
-            get { return m_mobileWallpaperList; }
-            set { m_mobileWallpaperList = value; }
-        }
-
+        public string SpotlightWallpaperLocation { get; set; }
+        public List<string> DesktopWallpaperList { get; set; }
+        public List<string> MobileWallpaperList { get; set; }
 
         public Fetcher()
         {
-            m_desktopWallpaperList = new List<string>();
-            m_mobileWallpaperList = new List<string>();
-            m_spotlightWallpaperLocation = null;
-
-            GetWallpaperLocation();
-            CreateWallpaperList();
+            DesktopWallpaperList = new List<string>();
+            MobileWallpaperList = new List<string>();
+            SpotlightWallpaperLocation = null;
         }
-        
 
-        private void GetWallpaperLocation()
+        public void FetchWallpapers()
         {
-            RegistryKey reg = Registry.CurrentUser;
-            reg = reg.OpenSubKey(SPOTLIGHT_REGISTRY_KEY__LOCATION, false);
-            string loc = null;
-            if (reg == null)
+            FindWallpaperLocation();
+            CreateWallpaperList();
+            CopyWallpapers();
+        }
+
+        private void FindWallpaperLocation()
+        {
+            FindAssetDirFromRegistry();
+            if (SpotlightWallpaperLocation != null)
             {
-                Console.WriteLine("Registry data not found.");
                 return;
             }
-            loc = (string)reg.GetValue(SPOTLIGHT_REGISTRY_NAME__WALLPAPER_LOCATION);
 
-            SpotlightWallpaperLocation = loc;
+            FindAssetDirLocally();
+        }
 
-            if (loc == null)
+        private void FindAssetDirFromRegistry()
+        {
+            Console.WriteLine("Trying to find Asset directory from registry...");
+
+            RegistryKey reg = Registry.CurrentUser;
+            reg = reg.OpenSubKey(REGKEY_SPOTLIGHT, false);
+            if (reg == null)
             {
-                Console.WriteLine("ERROR: Could not locate Spotlight Wallpapers.");
+                Console.WriteLine($"Reg key: '{REGKEY_SPOTLIGHT}' not found.");
+                return;
             }
+
+            var assetsDir = (string)reg.GetValue(REGNAME_ASSET_DIR);
+            if (assetsDir == null)
+            {
+                Console.WriteLine($"Reg name: '{REGNAME_ASSET_DIR}' not found.");
+                return;
+            }
+
+            Console.WriteLine($"Directory location found: {assetsDir}");
+            if (!Directory.Exists(assetsDir))
+            {
+                Console.WriteLine("Asset directory does not exist.");
+            }
+
+            Console.WriteLine($"Asset directory found: {assetsDir}");
+
+            SpotlightWallpaperLocation = assetsDir;
+        }
+
+        private void FindAssetDirLocally()
+        {
+            Console.WriteLine("Attempting to find Asset directory locally...");
+            var localAppDataDir = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+            var packagesDir = Path.Combine(localAppDataDir, "Packages");
+            if (!Directory.Exists(packagesDir))
+            {
+                Console.WriteLine($"Directory '{packagesDir}' does not exist.");
+                return;
+            }
+            var cdmDir = Directory.EnumerateDirectories(packagesDir)
+                                  .FirstOrDefault(d =>
+                                  {
+                                      var dn = Path.GetFileName(d);
+                                      return dn.StartsWith(CDM_DIR);
+                                  });
+            if (cdmDir == null)
+            {
+                Console.WriteLine($"Directory: '{packagesDir}\\{CDM_DIR}*' does not exist.");
+            }
+
+            if (!Directory.Exists(cdmDir))
+            {
+                Console.WriteLine($"Directory '{cdmDir}' does not exist.");
+                return;
+            }
+
+            var assetsDir = Path.Combine(cdmDir, ASSETS_DIR);
+            if (!Directory.Exists(assetsDir))
+            {
+                Console.WriteLine($"Directory '{assetsDir}' does not exist.");
+                return;
+            }
+
+            Console.WriteLine($"Asset directory found: {assetsDir}");
+
+            SpotlightWallpaperLocation = assetsDir;
+            return;
         }
 
         private void CreateWallpaperList()
         {
-            if (string.IsNullOrWhiteSpace(SpotlightWallpaperLocation))
+            if (SpotlightWallpaperLocation == null)
             {
-                Console.WriteLine("Invalid Spotlight wallpaper location.");
                 return;
             }
 
             string[] files = Directory.GetFiles(SpotlightWallpaperLocation);
             foreach (var file in files)
             {
-                Image img = null;
+                Image img;
                 try
                 {
                     img = Image.FromFile(file);
@@ -91,37 +138,38 @@ namespace WallpaperFetcher
                     continue;
                 }
 
-                if (img.Height == 1080)
+                if (img.Height == 1080) //TODO: Find a way to get screen res in a console app.
                 {
-                    m_desktopWallpaperList.Add(file);
+                    DesktopWallpaperList.Add(file);
                 }
-                else if (img.Width == 1080)
+                else if(img.Width == 1080)
                 {
-                    m_mobileWallpaperList.Add(file);
+                    MobileWallpaperList.Add(file);
                 }
             }
         }
 
         private void CopyWallpapers()
         {
-            string exeFolder = null;
-            exeFolder = Assembly.GetEntryAssembly().Location;
-            exeFolder = Path.GetDirectoryName(exeFolder);
+            //TODO: Find a way to identify if self-contained or not.
+            // var assemblyFile = Assembly.GetEntryAssembly().Location; // Doesn't work for self-contained exe.
+            var assemblyFile = Process.GetCurrentProcess().MainModule.FileName;
+            var exeDir = Path.GetDirectoryName(assemblyFile);
 
-            string desktopFolder = Path.Combine(exeFolder, DESKTOP_WALLPAPER_FOLDER);
-            string mobileFolder = Path.Combine(exeFolder, MOBILE_WALLPAPER_FOLDER);
+            string desktopDir = Path.Combine(exeDir, DESKTOP_WALLPAPER_DIR);
+            string mobileDir = Path.Combine(exeDir, MOBILE_WALLPAPER_DIR);
 
-            CopyWallpapers(m_desktopWallpaperList, desktopFolder);
-            CopyWallpapers(m_mobileWallpaperList, mobileFolder);
+            CopyWallpapers(DesktopWallpaperList, desktopDir);
+            CopyWallpapers(MobileWallpaperList, mobileDir);
         }
 
-        private void CopyWallpapers(List<string> source, string destinationFolder)
+        private void CopyWallpapers(List<string> source, string destinationDir)
         {
-            if (!Directory.Exists(destinationFolder))
+            if (!Directory.Exists(destinationDir))
             {
                 try
                 {
-                    Directory.CreateDirectory(destinationFolder);
+                    Directory.CreateDirectory(destinationDir);
                 }
                 catch (Exception ex)
                 {
@@ -131,23 +179,19 @@ namespace WallpaperFetcher
 
             foreach (var file in source)
             {
-                string dest = Path.Combine(destinationFolder, Path.GetFileNameWithoutExtension(file));
+                string dest = Path.Combine(destinationDir, Path.GetFileNameWithoutExtension(file));
                 dest += ".jpg";
 
                 try
                 {
+                    Console.WriteLine($"Copying file '{file}' to '{dest}'");
                     File.Copy(file, dest);
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine(string.Format("Could not copy '{0}' to '{1}'", file, destinationFolder) + ex.Message);
+                    Console.WriteLine(string.Format("Could not copy '{0}' to '{1}'", file, destinationDir) + ex.Message);
                 }
             }
-        }
-
-        public void FetchWallpapers()
-        {
-            CopyWallpapers();
         }
     }
 }

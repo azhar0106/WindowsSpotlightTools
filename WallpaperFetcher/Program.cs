@@ -6,8 +6,8 @@ namespace WallpaperFetcher
     {
         static void Main(string[] args)
         {
-            Fetcher wf = new Fetcher();
-            wf.FetchWallpapers();
+            new Fetcher().FetchWallpapers();
+            Console.ReadKey();
         }
     }
 }
