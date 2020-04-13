@@ -1,0 +1,94 @@
+﻿<UserControl x:Class="WallpaperFetcherGui.SettingsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:WallpaperFetcherGui"
+             mc:Ignorable="d">
+    <UserControl.Resources>
+        <Style x:Key="Group" TargetType="GroupBox">
+            <Setter Property="Margin" Value="5"/>
+        </Style>
+        
+        <Style x:Key="Label" TargetType="TextBlock">
+            <Setter Property="Width" Value="150"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+            <Setter Property="Margin" Value="5"/>
+        </Style>
+
+        <Style x:Key="TextBox" TargetType="TextBox">
+            <Setter Property="Margin" Value="5"/>
+        </Style>
+
+        <Style x:Key="InputBox" TargetType="TextBox" BasedOn="{StaticResource TextBox}">
+            <Setter Property="Width" Value="200"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+
+        <Style x:Key="Button" TargetType="Button">
+            <Setter Property="Margin" Value="5"/>
+            <Setter Property="Padding" Value="10,2"/>
+        </Style>
+    </UserControl.Resources>
+    <DockPanel LastChildFill="True" >
+
+        <GroupBox DockPanel.Dock="Top" Header="Settings"
+                  Style="{StaticResource Group}">
+            <StackPanel Orientation="Vertical">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Style="{StaticResource Label}">Resolution to Look for:</TextBlock>
+                    <TextBox Style="{StaticResource InputBox}" Width="50"
+                             Text="{Binding ResolutionHorizontal, Mode=TwoWay}"/>
+                    <TextBlock Style="{StaticResource Label}" Width="Auto" Text=" x "/>
+                    <TextBox Style="{StaticResource InputBox}" Width="50"
+                             Text="{Binding ResolutionVertical, Mode=TwoWay}"/>
+                    <Button Style="{StaticResource Button}"
+                            Command="{Binding CurrentResCommand}">Current</Button>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Style="{StaticResource Label}">Base Folder Location:</TextBlock>
+                    <TextBox Style="{StaticResource InputBox}"
+                             Text="{Binding Model.BaseDirLocation}"/>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Style="{StaticResource Label}">Desktop Wallpapers Folder Name:</TextBlock>
+                    <TextBox Style="{StaticResource InputBox}"
+                             Text="{Binding Model.DesktopDirName}"/>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Style="{StaticResource Label}">Mobile Wallpapers Folder Name:</TextBlock>
+                    <TextBox Style="{StaticResource InputBox}"
+                             Text="{Binding Model.MobileDirName}"/>
+                </StackPanel>
+
+                
+            </StackPanel>
+        </GroupBox>
+
+        <GroupBox Header="Controls" DockPanel.Dock="Top"
+                  Style="{StaticResource Group}">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                <Button Style="{StaticResource Button}" Command="{Binding FetchCommand}">Fetch Wallpapers</Button>
+                <Button Style="{StaticResource Button}" Command="{Binding SaveCommand}">Save Settings</Button>
+            </StackPanel>
+        </GroupBox>
+
+        <GroupBox Header="Log"
+                  Style="{StaticResource Group}">
+            <DockPanel HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                       LastChildFill="True">
+                <TextBox Style="{StaticResource TextBox}" HorizontalAlignment="Stretch"
+                         Text="{Binding Logs}"
+                         VerticalAlignment="Stretch"
+                         AcceptsReturn="True"
+                         MinHeight="100"
+                         HorizontalScrollBarVisibility="Auto"
+                         VerticalScrollBarVisibility="Auto"/>
+            </DockPanel>
+        </GroupBox>
+
+    </DockPanel>
+</UserControl>
